@@ -1,0 +1,125 @@
+//Broker
+const aedes = require ('aedes') ()
+const server = require('net').createServer(aedes.handle)
+const port = 11000
+
+//Express Server and MySQL
+const express = require('express');
+const mysql = require('mysql');
+const dotenv = require('dotenv');
+const bodyParser = require('body-parser');
+const { log } = require('console');
+
+// App set-up
+const app = express();
+app.use(bodyParser.urlencoded({ extended: false }));
+//To do: use MVC architecture
+var hostname = "localhost";
+var port_app = 8080;
+
+// Create connection https://pimylifeup.com/raspberry-pi-mysql/
+const db = mysql.createConnection({
+  host : 'localhost',
+  user: 'blast',
+  password: '12345',
+  database: 'shiftdb'
+});
+
+//Connect 
+db.connect(function(err){
+  if(err){
+    throw err;
+  }
+  console.log("MySQL Connected...");
+});
+
+server.listen(port, function(){
+  console.log('server started and listening on port ', port)
+})
+
+function getErrorTime() {
+  var currentdate = new Date();
+  var errorDatetime = "Date and Time of Error: " + currentdate.getDate() + "/"
+            + (currentdate.getMonth()+1)  + "/" 
+            + currentdate.getFullYear() + " @ "  
+            + currentdate.getHours() + ":"  
+            + currentdate.getMinutes() + ":" 
+            + currentdate.getSeconds();
+  return errorDatetime;
+}
+aedes.on('publish', async function (packet, client){
+  if(client){
+    console.log('Client \x1b[31m' + (client ? client.id : 'BROKER_' + aedes.id)+ '\x1b[0m has published', packet.payload.toString(), 'on', packet.topic, 'to broker', aedes.id)
+    //console.log(packet.payload.toString());
+    const data = JSON.parse(packet.payload.toString());
+    //console.log(`[MESSAGE_PUBLISHED] Client ${(client ? client.id : 'BROKER_' + aedes.id)} has published message on ${packet.topic} to broker ${aedes.id}`);
+    
+    //If topic is master pi /shift/dlsau/master-pi1/sensorvalues
+    var splittedTopic = packet.topic.split('/');
+    console.log("topic contents: " + splittedTopic[1]);
+      
+    if(splittedTopic[1] === "shift") {
+      if(splittedTopic[2] === "dlsau") {
+        var table = splittedtopic[2] + "_master-pi";
+
+        // check if string contains master pi
+
+        // if table doesnt exist generate new table
+        // can use topics for generating new tables
+        //
+        if(splittedTopic[3] === "master-pi1") {
+          var node_id = data.node_id;
+          let datetime = new Date(data.datetime);
+          var temperature = parseFloat(data.temperature);
+          let pressure = parseFloat(data.pressure);
+          let humidity = parseFloat(data.humidity);
+          let mPi_data = {node_id: node_id, datetime: datetime, temperature: temperature, pressure: pressure, humidity: humidity};
+          let sql = `INSERT INTO master_pi SET ?`;
+          let query = db.query(sql, mPi_data, (err, result) => {
+            if(err) throw err;
+            console.log(result);
+            console.log("Insert Successful");
+          });
+        } else if(splittedTopic[3] === "edge-pi1" ||
+                  splittedTopic[3] === "edge-pi2" ||
+                  splittedTopic[3] === "edge-pi3" ||
+                  splittedTopic[3] === "edge-pi4") {
+          
+          if (splittedTopic[4] === "sensorvalues") {
+            var node_id = data.node_id;
+            let datetime = new Date(data.datetime);
+            let light_intensity = parseFloat(data.light_intensity);
+            let ePi_data = {node_id: node_id, datetime: datetime, light_intensity: light_intensity}
+            let sql = `INSERT INTO edge_pi SET ?`;
+            let query = db.query(sql, ePi_data, (err, result) => {
+              if(err) throw err;
+              console.log(result);
+              console.log("Insert Successful"); 
+            });
+          }
+                    
+        } else {
+          var errorDateTime = getErrorTime();
+          console.log(errorDateTime);
+          console.log("Invalid topic");
+        }
+      
+      } else {
+        var errorDateTime = getErrorTime();
+        console.log(errorDateTime);
+        console.log("Invalid topic, not from DLSAU");
+      }
+      
+    } else {
+      var errorDateTime = getErrorTime();
+      console.log(errorDateTime);
+      console.log("Invalid topic");
+    }
+  } 
+});
+
+
+app.listen(port_app, hostname, ()=> {
+  console.log(`Server running at:`);
+  console.log('http://' + hostname + ':' + port_app);
+});

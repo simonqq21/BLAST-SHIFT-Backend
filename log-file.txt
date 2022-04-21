@@ -1,0 +1,19 @@
+
+> backend@1.0.0 start
+> nodemon broker.js
+
+[33m[nodemon] 2.0.15[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,json[39m
+[32m[nodemon] starting `node broker.js`[39m
+server started and listening on port  11000
+Server running at:
+http://localhost:8080
+MySQL Connected...
+Client [31mdlsau-kratky_dlsau-kratky0edge-1[0m has published {"datetime":{"0":"01\/31\/2022 14:59"},"sitename":{"0":"dlsau-kratky"},"uname":{"0":"dlsau-kratky0edge-1"},"lightintensity":{"0":10721.6666666667}} on /shift/dlsau-kratky/dlsau-kratky0edge-1/sensorvalues to broker 79591f25-e187-4256-bbb5-e16114dcb480
+{"datetime":{"0":"01\/31\/2022 14:59"},"sitename":{"0":"dlsau-kratky"},"uname":{"0":"dlsau-kratky0edge-1"},"lightintensity":{"0":10721.6666666667}}
+[MESSAGE_PUBLISHED] Client dlsau-kratky_dlsau-kratky0edge-1 has published message on /shift/dlsau-kratky/dlsau-kratky0edge-1/sensorvalues to broker 79591f25-e187-4256-bbb5-e16114dcb480
+Dev type: edge-1
+sensorvalues
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
