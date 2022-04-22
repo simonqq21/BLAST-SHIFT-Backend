@@ -21,7 +21,7 @@ var port_app = 8080;
 const db = mysql.createConnection({
   host : 'localhost',
   user: 'blast',
-  password: '12345',
+  password: 'shift12345',
   database: 'shiftdb'
 });
 
