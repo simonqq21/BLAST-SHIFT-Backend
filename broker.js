@@ -1,7 +1,7 @@
 //Broker
 const aedes = require ('aedes') ()
 const server = require('net').createServer(aedes.handle)
-const port = 20010
+const port = 1883
 
 //Express Server and MySQL
 const express = require('express');
