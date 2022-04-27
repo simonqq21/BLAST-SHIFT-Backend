@@ -186,7 +186,7 @@ function hasNan(location, data){
 function parseData(raw_data, location) {
   if(location.includes("master")) {
     try {
-      let numId = raw_data["uname"]["0"].split("0");
+      let numId = raw_data["hostname"]["0"].split("0");
       console.log("Num id: " + numId);
       let tempId = numId[1].split("-");
       let node_id = parseInt(tempId[1]);
@@ -203,7 +203,7 @@ function parseData(raw_data, location) {
     
   } 
   else if (location.includes("edge")) {
-    let numId = raw_data["uname"]["0"].split("0");
+    let numId = raw_data["hostname"]["0"].split("0");
     console.log("Num id: " + numId);
     let tempId = numId[1].split("-");
     let node_id = parseInt(tempId[1]);
@@ -232,7 +232,7 @@ aedes.on('publish', async function (packet, client){
       var raw_data = JSON.parse(packet.payload.toString());
       console.log("RAW DATA-------");
       console.log(raw_data);
-      console.log(raw_data["uname"]["0"]);
+      console.log(raw_data["hostname"]["0"]);
       
       console.log(packet.payload.toString());
     } else {
