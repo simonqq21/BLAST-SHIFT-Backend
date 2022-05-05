@@ -221,6 +221,8 @@ function parseData(raw_data, location) {
 function checkPacketTopic(topic) {
   let topicsplitted = topic.split('/');
    // If invalid format
+  console.log("topic: " + topic)
+  console.log("Length: " + topicsplitted.length)
   if(topicsplitted.length == 6) 
     return true
   else
