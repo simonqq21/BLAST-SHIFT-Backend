@@ -186,10 +186,9 @@ function hasNan(location, data){
 function parseData(raw_data, location) {
   if(location.includes("master")) {
     try {
-      let numId = raw_data["hostname"]["0"].split("0");
+      let numId = raw_data["hostname"]["0"].charAt(1);
       console.log("Num id: " + numId);
-      let tempId = numId[1].split("-");
-      let node_id = parseInt(tempId[1]);
+      let node_id = parseInt(numId);
       let datetime = new Date(raw_data["datetime"]["0"]);
       let temperature = parseFloat(raw_data["temperature"]["0"]);
       let pressure = parseFloat(raw_data["pressure"]["0"]);
@@ -203,21 +202,26 @@ function parseData(raw_data, location) {
     
   } 
   else if (location.includes("edge")) {
-    let numId = raw_data["hostname"]["0"].split("0");
-    console.log("Num id: " + numId);
-    let tempId = numId[1].split("-");
-    let node_id = parseInt(tempId[1]);
-    let datetime = new Date(raw_data["datetime"]["0"]);
-    let light_intensity = parseFloat(raw_data["lightintensity"]["0"]);
-    let data = {node_id: node_id, datetime: datetime, light_intensity: light_intensity}
-    return data;    
+    try{
+      let numId = raw_data["hostname"]["0"].charAt(1);
+      console.log("Num id: " + numId);
+      let node_id = parseInt(numId);
+      let datetime = new Date(raw_data["datetime"]["0"]);
+      let light_intensity = parseFloat(raw_data["lightintensity"]["0"]);
+      let data = {node_id: node_id, datetime: datetime, light_intensity: light_intensity}
+      return data; 
+    } catch (e) {
+      console.log("Something happpened in the parsing of data. Returning Null...");
+      return null;
+    }
+      
   }
 }
 
 function checkPacketTopic(topic) {
   let topicsplitted = topic.split('/');
    // If invalid format
-  if(topicsplitted.length == 5) 
+  if(topicsplitted.length == 6) 
     return true
   else
     return false
@@ -227,6 +231,7 @@ aedes.on('publish', async function (packet, client){
   
   validTopic = checkPacketTopic(packet.topic);
   if(client && validTopic) {
+    let expType = "kratky";
     if(!packet.topic.includes("images")) {
       console.log('Client \x1b[31m' + (client ? client.id : 'BROKER_' + aedes.id)+ '\x1b[0m has published', packet.payload.toString(), 'on', packet.topic, 'to broker', aedes.id)
       var raw_data = JSON.parse(packet.payload.toString());
@@ -244,19 +249,21 @@ aedes.on('publish', async function (packet, client){
     var splittedTopic = packet.topic.split('/');
     if(splittedTopic[1] === "shift") {
       let db_name = `shiftdb`;
-      let validDevType = checkDevType(splittedTopic[3]);
+      let validDevType = checkDevType(splittedTopic[3]); //check if master or edge
 
       //Checks if either master or edge 
       if(validDevType) {
-          let devType = splittedTopic[3].split('0');
-          console.log("Dev type: " + devType[1]);
-          devType = devType[1].split("-"); //to get edge or master string
-          let temp = splittedTopic[2].replace("-", "_"); //Split dlsau-dft
-          let location = temp + "_" + devType[0]; //concatenate to form table name
+          let devType = splittedTopic[3]; //master or edge
+          console.log("Dev type: " + devType);
+          //devType = devType[1].split("-"); //to get 'edge' or 'master' string
+          //let temp = splittedTopic[2].replace("-", "_"); //make dlsau-dft to dlsau_dft
+          //let location = temp + "_" + devType[0]; //concatenate to form table name
+          let temp = splittedTopic[2].replace("-", "_"); //dlsau_bulacan
+          let location = splittedTopic[2] + "_" + expType + devType; //dlsau_bulacan_kratky_edge
 
           // Check if sensor value or image
-          console.log(splittedTopic[4]);
-          if (splittedTopic[4] === "sensorvalues") {
+          console.log(splittedTopic[5]);
+          if (splittedTopic[5] === "sensorvalues") {
             let parsed_data = parseData(raw_data, location);
             if(parsed_data != null) {
               console.log(parsed_data);
