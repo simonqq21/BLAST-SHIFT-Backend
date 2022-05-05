@@ -261,7 +261,7 @@ aedes.on('publish', async function (packet, client){
           //let temp = splittedTopic[2].replace("-", "_"); //make dlsau-dft to dlsau_dft
           //let location = temp + "_" + devType[0]; //concatenate to form table name
           let temp = splittedTopic[2].replace("-", "_"); //dlsau_bulacan
-          let location = splittedTopic[2] + "_" + expType + devType; //dlsau_bulacan_kratky_edge
+          let location = temp + "_" + expType + "_" + devType; //dlsau_bulacan_kratky_edge
 
           // Check if sensor value or image
           console.log(splittedTopic[5]);
